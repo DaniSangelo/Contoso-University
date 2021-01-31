@@ -10,13 +10,13 @@ namespace Contoso_University.Data
     {
         public static void Initialize(SchoolContext context)
         {
-            /*context.Database.EnsureCreated();
+            context.Database.EnsureCreated();
 
             // Look for any students.
             if (context.Students.Any())
             {
                 return;   // DB has been seeded
-            }*/
+            }
 
             var students = new Student[]
             {
