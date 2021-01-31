@@ -10,13 +10,13 @@ namespace Contoso_University.Models
         public int StudentId { get; set; }
         [Required]
         [Display(Name = "Last Name")]
-        //[StringLength(50, MinimumLength = 2)]
+        [StringLength(50, MinimumLength = 2)]
         public string LastName { get; set; }
 
         [Required]
         [Display(Name = "First Name")]
-        //[StringLength(50)]
-        //[Column("FirstName")] //the property FirstMidName will be mapped to database as firstname
+        [StringLength(50)]
+        [Column("FirstName")] //the property FirstMidName will be mapped to database as firstname
         public string FirstMidName { get; set; }
 
         [Display(Name = "Enrollment Date")]
