@@ -10,23 +10,23 @@ using Contoso_University.Models;
 
 namespace Contoso_University.Controllers
 {
-    public class EnrollmentsController : Controller
+    public class DepartmentsController : Controller
     {
         private readonly SchoolContext _context;
 
-        public EnrollmentsController(SchoolContext context)
+        public DepartmentsController(SchoolContext context)
         {
             _context = context;
         }
 
-        // GET: Enrollments
+        // GET: Departments
         public async Task<IActionResult> Index()
         {
-            var schoolContext = _context.Enrollments.Include(e => e.Course).Include(e => e.Student);
+            var schoolContext = _context.Departments.Include(d => d.Administrator);
             return View(await schoolContext.ToListAsync());
         }
 
-        // GET: Enrollments/Details/5
+        // GET: Departments/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -34,45 +34,42 @@ namespace Contoso_University.Controllers
                 return NotFound();
             }
 
-            var enrollment = await _context.Enrollments
-                .Include(e => e.Course)
-                .Include(e => e.Student)
-                .FirstOrDefaultAsync(m => m.EnrollmentId == id);
-            if (enrollment == null)
+            var department = await _context.Departments
+                .Include(d => d.Administrator)
+                .FirstOrDefaultAsync(m => m.DepartmentId == id);
+            if (department == null)
             {
                 return NotFound();
             }
 
-            return View(enrollment);
+            return View(department);
         }
 
-        // GET: Enrollments/Create
+        // GET: Departments/Create
         public IActionResult Create()
         {
-            ViewData["CourseId"] = new SelectList(_context.Courses, "CourseId", "CourseId");
-            ViewData["StudentId"] = new SelectList(_context.Students, "StudentId", "FirstMidName");
+            ViewData["InstructorId"] = new SelectList(_context.Instructors, "Id", "FirstMidName");
             return View();
         }
 
-        // POST: Enrollments/Create
+        // POST: Departments/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("EnrollmentId,CourseId,StudentId,Grade")] Enrollment enrollment)
+        public async Task<IActionResult> Create([Bind("DepartmentId,Name,Budget,StartDate,InstructorId")] Department department)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(enrollment);
+                _context.Add(department);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "CourseId", "CourseId", enrollment.CourseId);
-            ViewData["StudentId"] = new SelectList(_context.Students, "StudentId", "FirstMidName", enrollment.StudentId);
-            return View(enrollment);
+            ViewData["InstructorId"] = new SelectList(_context.Instructors, "Id", "FirstMidName", department.InstructorId);
+            return View(department);
         }
 
-        // GET: Enrollments/Edit/5
+        // GET: Departments/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -80,24 +77,23 @@ namespace Contoso_University.Controllers
                 return NotFound();
             }
 
-            var enrollment = await _context.Enrollments.FindAsync(id);
-            if (enrollment == null)
+            var department = await _context.Departments.FindAsync(id);
+            if (department == null)
             {
                 return NotFound();
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "CourseId", "CourseId", enrollment.CourseId);
-            ViewData["StudentId"] = new SelectList(_context.Students, "StudentId", "FirstMidName", enrollment.StudentId);
-            return View(enrollment);
+            ViewData["InstructorId"] = new SelectList(_context.Instructors, "Id", "FirstMidName", department.InstructorId);
+            return View(department);
         }
 
-        // POST: Enrollments/Edit/5
+        // POST: Departments/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("EnrollmentId,CourseId,StudentId,Grade")] Enrollment enrollment)
+        public async Task<IActionResult> Edit(int id, [Bind("DepartmentId,Name,Budget,StartDate,InstructorId")] Department department)
         {
-            if (id != enrollment.EnrollmentId)
+            if (id != department.DepartmentId)
             {
                 return NotFound();
             }
@@ -106,12 +102,12 @@ namespace Contoso_University.Controllers
             {
                 try
                 {
-                    _context.Update(enrollment);
+                    _context.Update(department);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!EnrollmentExists(enrollment.EnrollmentId))
+                    if (!DepartmentExists(department.DepartmentId))
                     {
                         return NotFound();
                     }
@@ -122,12 +118,11 @@ namespace Contoso_University.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "CourseId", "CourseId", enrollment.CourseId);
-            ViewData["StudentId"] = new SelectList(_context.Students, "StudentId", "FirstMidName", enrollment.StudentId);
-            return View(enrollment);
+            ViewData["InstructorId"] = new SelectList(_context.Instructors, "Id", "FirstMidName", department.InstructorId);
+            return View(department);
         }
 
-        // GET: Enrollments/Delete/5
+        // GET: Departments/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -135,32 +130,31 @@ namespace Contoso_University.Controllers
                 return NotFound();
             }
 
-            var enrollment = await _context.Enrollments
-                .Include(e => e.Course)
-                .Include(e => e.Student)
-                .FirstOrDefaultAsync(m => m.EnrollmentId == id);
-            if (enrollment == null)
+            var department = await _context.Departments
+                .Include(d => d.Administrator)
+                .FirstOrDefaultAsync(m => m.DepartmentId == id);
+            if (department == null)
             {
                 return NotFound();
             }
 
-            return View(enrollment);
+            return View(department);
         }
 
-        // POST: Enrollments/Delete/5
+        // POST: Departments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var enrollment = await _context.Enrollments.FindAsync(id);
-            _context.Enrollments.Remove(enrollment);
+            var department = await _context.Departments.FindAsync(id);
+            _context.Departments.Remove(department);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool EnrollmentExists(int id)
+        private bool DepartmentExists(int id)
         {
-            return _context.Enrollments.Any(e => e.EnrollmentId == id);
+            return _context.Departments.Any(e => e.DepartmentId == id);
         }
     }
 }
