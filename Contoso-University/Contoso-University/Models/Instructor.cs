@@ -19,7 +19,7 @@ namespace Contoso_University.Models
         public string FirstMidName { get; set; }
 
         // I can put all attributes on the same line just separing them using a comma
-        //[DataType(DataType.Date), DisplayFormat(DataFormatString = "{0: dd/MM/yyyy}"), Display(Name = "Hire Date")]
+        [DataType(DataType.Date), DisplayFormat(DataFormatString = "{0: dd/MM/yyyy}"), Display(Name = "Hire Date")]
         public DateTime HireDate { get; set; }
 
         [Display(Name = "Full Name")]
