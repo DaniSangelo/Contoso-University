@@ -22,7 +22,8 @@ namespace Contoso_University.Controllers
         // GET: Courses
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Courses.ToListAsync());
+            var courses = _context.Courses.Include(c => c.Department).AsNoTracking();
+            return View(await courses.ToListAsync());
         }
 
         // GET: Courses/Details/5
@@ -33,8 +34,7 @@ namespace Contoso_University.Controllers
                 return NotFound();
             }
 
-            var course = await _context.Courses
-                .FirstOrDefaultAsync(m => m.CourseId == id);
+            var course = await _context.Courses.Include(c => c.Department).FirstOrDefaultAsync(m => m.CourseId == id);
             if (course == null)
             {
                 return NotFound();
@@ -73,7 +73,7 @@ namespace Contoso_University.Controllers
                 return NotFound();
             }
 
-            var course = await _context.Courses.FindAsync(id);
+            var course = await _context.Courses.Include(c => c.Department).SingleOrDefaultAsync(c => c.CourseId == id);
             if (course == null)
             {
                 return NotFound();
