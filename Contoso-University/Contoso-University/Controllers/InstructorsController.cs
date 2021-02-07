@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Contoso_University.Data;
 using Contoso_University.Models;
+using Contoso_University.Models.SchoolViewModels;
 
 namespace Contoso_University.Controllers
 {
@@ -17,9 +18,36 @@ namespace Contoso_University.Controllers
         }
 
         // GET: Instructors
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? id, int? courseId)
         {
-            return View(await _context.Instructors.ToListAsync());
+            var viewModel = new InstructorIndexData();
+            viewModel.Instructors = await _context.Instructors
+                .Include(i => i.OfficeAssignment)
+                .Include(i => i.CourseAssignments)
+                    .ThenInclude(i => i.Course)
+                        .ThenInclude(i => i.Enrollments)
+                            .ThenInclude(i => i.Student)
+                .Include(i => i.CourseAssignments)
+                    .ThenInclude(i => i.Course)
+                        .ThenInclude(i => i.Department)
+                .AsNoTracking()
+                .OrderBy(i => i.LastName)
+                .ToListAsync();
+            
+            if (id.HasValue)
+            {
+                ViewData["InstructorId"] = id.Value;
+                Instructor instructor = viewModel.Instructors.Where(i => i.Id == id.Value).Single();
+                viewModel.Courses = instructor.CourseAssignments.Select(s => s.Course);
+            }
+
+            if (courseId.HasValue)
+            {
+                ViewData["CourseId"] = courseId.Value;
+                viewModel.Enrollments = viewModel.Courses.Where(c => c.CourseId == courseId).Single().Enrollments;
+            }
+
+            return View(viewModel);
         }
 
         // GET: Instructors/Details/5
