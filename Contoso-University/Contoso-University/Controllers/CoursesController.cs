@@ -34,7 +34,7 @@ namespace Contoso_University.Controllers
                 return NotFound();
             }
 
-            var course = await _context.Courses.Include(c => c.Department).FirstOrDefaultAsync(m => m.CourseId == id);
+            var course = await _context.Courses.Include(c => c.Department).AsNoTracking().FirstOrDefaultAsync(m => m.CourseId == id);
             if (course == null)
             {
                 return NotFound();
@@ -46,6 +46,7 @@ namespace Contoso_University.Controllers
         // GET: Courses/Create
         public IActionResult Create()
         {
+            PopulateDepartmentsDropDownList();
             return View();
         }
 
@@ -54,7 +55,7 @@ namespace Contoso_University.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CourseId,Title,Credits")] Course course)
+        public async Task<IActionResult> Create([Bind("CourseId,Credits,DepartmentId,Title")] Course course)
         {
             if (ModelState.IsValid)
             {
@@ -62,6 +63,7 @@ namespace Contoso_University.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            PopulateDepartmentsDropDownList(course.DepartmentId);
             return View(course);
         }
 
@@ -78,41 +80,38 @@ namespace Contoso_University.Controllers
             {
                 return NotFound();
             }
+            PopulateDepartmentsDropDownList(course.DepartmentId);
             return View(course);
         }
 
         // POST: Courses/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CourseId,Title,Credits")] Course course)
+        public async Task<IActionResult> EditPost(int? id)
         {
-            if (id != course.CourseId)
+            if (id == null)
             {
                 return NotFound();
             }
+            var course = await _context.Courses.FirstOrDefaultAsync(c => c.CourseId == id);
 
-            if (ModelState.IsValid)
+            if (await TryUpdateModelAsync<Course>(course, "", c => c.Credits, c => c.DepartmentId, c => c.Title))
             {
                 try
                 {
-                    _context.Update(course);
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateException)
                 {
-                    if (!CourseExists(course.CourseId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    ModelState.AddModelError("", "Unable to save changes. " +
+                        "Try again, and if the problem persists, " +
+                        "see you system administrator.");
                 }
                 return RedirectToAction(nameof(Index));
             }
+            PopulateDepartmentsDropDownList(course.DepartmentId);
             return View(course);
         }
 
@@ -124,8 +123,7 @@ namespace Contoso_University.Controllers
                 return NotFound();
             }
 
-            var course = await _context.Courses
-                .FirstOrDefaultAsync(m => m.CourseId == id);
+            var course = await _context.Courses.Include(c => c.Department).AsNoTracking().FirstOrDefaultAsync(m => m.CourseId == id);
             if (course == null)
             {
                 return NotFound();
@@ -148,6 +146,15 @@ namespace Contoso_University.Controllers
         private bool CourseExists(int id)
         {
             return _context.Courses.Any(e => e.CourseId == id);
+        }
+
+        private void PopulateDepartmentsDropDownList(object selectedDepartment = null)
+        {
+            var departments = from d in _context.Departments
+                              orderby d.Name
+                              select d;
+            ViewBag.DepartmentId = new SelectList(departments.AsNoTracking(), "DepartmentId", "Name", selectedDepartment);
+
         }
     }
 }
